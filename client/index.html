@@ -1,0 +1,2188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FireCut</title>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet"> -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/tailwind.min.css">  -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="../lib/tailwind-3.3.2.js"></script>    
+    <link href="../lib/css/fonts.css" rel="stylesheet">    
+    <link href="../lib/css/index.css" rel="stylesheet">
+    <!-- <link href="../lib/css/tailwind_output.css" rel="stylesheet"> -->
+    <!-- <link href="../lib/flowbite.min.css" rel="stylesheet">  -->
+</head>
+<body>
+    
+    <div>
+        
+        <div class="container mx-auto px-4 pt-2 flex items-center">        
+            <abbr title="https://firecut.ai/" class="w-5 h-5">
+                <button id="button-logo" class="w-4 h-4 me-2 rounded-sm bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none"><img src="../lib/assets/flame.png" alt="FireCut"></button>
+            </abbr>
+            <div class="w-full container mx-auto flex justify-between">       
+                
+                <button id="button-undo-disabled" class="mx-0 px-1 rounded-sm font-medium bg-transparent hover:bg-transparent text-gray-500 hover:text-gray-500 active:text-gray-500 border-none hover:border-none active:border-none focus:border-none outline-none focus:outline-none active:outline-none text-xs cursor-not-allowed">↺ Undo</button>
+                <button id="button-undo-enabled" class="mx-0 px-1 rounded-sm font-medium bg-neutral-700 hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none text-xs hidden">↺ Undo</button>
+
+                <button id="button-update" class="mx-0 px-1 rounded-sm font-medium  hover:bg-neutral-500 active:bg-neutral-400  active:text-black border-none text-xs bg-gradient-to-r from-purple-500 to-purple-600 text-white hidden">⬆️ Update available</button>            
+
+                <button id="" class="restartExt mx-0 px-1 rounded-sm font-medium bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none text-xs">🗘 Reload plugin</button>            
+            </div>
+        </div>
+        <div id="undo-info" class="container mx-auto px-4 pt-2 flex flex-col text-sm hidden">
+            <div class="mb-4">
+                <b>Warning:</b> Undo will roll back all changes in the current sequence back to the following state. A copy of the current sequence will be saved in the "FireCut" bin. Please proceed with caution. 
+            </div>
+            <div>
+                <table class="mx-auto text-sm">
+                    <tbody>
+                        <tr>
+                            <td class="font-bold pe-2">Sequence name:</td>
+                            <td id="undo-info-name">(unknown)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold pe-2">Undo state time:</td>
+                            <td id="undo-info-time">(unknown)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold pe-2">Comments:</td>
+                            <td id="undo-info-comments">(unknown)</td>
+                        </tr>
+                        <!-- <tr>
+                            <td class="font-bold pe-2">Sequence name:</td>
+                            <td id="undo-info-name">test</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold pe-2">Undo state time:</td>
+                            <td id="undo-info-time">6/22/2023, 1:25:17 AM</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold pe-2">Comments:</td>
+                            <td id="undo-info-comments">	Before cutting silences (advanced)</td>
+                        </tr> -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6 mb-2 flex justify-center">
+                <button class="mx-2 py-2 px-6 rounded-lg font-bold bg-red-600 hover:bg-red-500 active:bg-red-700 text-white active:text-white border-none" id="button-undo-confirm">Confirm undo</button>
+                <button class="mx-2 py-2 px-6 rounded-lg font-bold bg-gray-500 hover:bg-gray-400 active:bg-gray-600 text-white active:text-white border-none" id="button-undo-hide">Cancel</button>
+            </div>       
+        </div>
+    </div>
+    <hr class="mt-2 border-gray-700 mx-4">    
+    
+    <div class="container mx-auto px-4 menu hidden" menu-name="silence-cutting-basic">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between items-center">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🔇Remove silences</h3>
+            <!-- <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div> -->
+            <div class="select-none bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">New:<span class="ms-1 text-xs  text-purple-200">Add J-cuts<br>in Advanced mode</span></div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex flex-col justify-center text-sm mb-3 text-left">
+                <p>Cuts out silences from ALL tracks, based on the audio from the selected guidance track(s).</p>                
+            </div> 
+        </div>
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <div class="flex justify-center mb-4">
+                <div class="flex justify-center bg-zinc-700 rounded-md">
+                    <button class="outline-none border-none bg-gray-500 py-1 px-4 me-1 rounded-md text-white text-xs font-medium" >BASIC</button>
+                    <button class="outline-none border-none active:bg-gray-600 bg-zinc-700 hover:bg-zinc-500 py-1 px-4 ms-1 rounded-md text-white text-xs font-medium menu-open" target-menu="silence-cutting-advanced" >ADVANCED</button>
+                </div>
+            </div>
+            
+
+            
+            <div id="setting-silence-cutting-type">
+                <h4 class="text-md text-white mt-2 mb-1">Silence cutting tightness</h4>        
+                <div class="flex flex-col">
+                    <div class="flex justify-between">
+                        <div class="text-sm font-medium select-none">Loose cut</div>
+                        <div class="text-sm font-medium select-none">Default</div>
+                        <div class="text-sm font-medium select-none">Tight cut</div>
+                    </div>
+                    <input id="range-silence-cutting" type="range" value="50" step="10" class="outline-none my-2 w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                    
+                </div>
+            </div>
+
+            
+            <div id="setting-silence-cutting-tracks-basic" class="">
+                <!-- <h4 class="text-md text-white mt-6 mb-1">Silence guidance audio track(s)</h4>        
+                <div class="silence-cutting-audio-track-basic flex-col">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="track-1-audio" name="track-1-audio" value="1" checked>
+                        <label for="track-1-audio" class="ms-1 text-sm font-medium select-none" >Audio 1</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="track-2-audio" name="track-2-audio" value="2" checked>
+                        <label for="track-2-audio" class="ms-1 text-sm font-medium select-none" >Audio 2</label>
+                    </div>                   
+                </div> -->
+            </div>
+
+            <!-- <div id="setting-silence-cutting-tracks-basic" class="hidden">
+                <h4 class="text-md text-white mt-6 mb-1">Silence cutting tracks</h4>        
+                <div class="flex flex-col">
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm font-medium">Audio track:</div>
+                        <select id="silence-cutting-audio-track-basic" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="0">Audio 1</option>
+                        </select>
+                    </div>
+                </div>
+            </div> -->
+
+            
+             
+
+            <div id="setting-silence-cutting-scope-basic" class="">
+                <h4 class="text-md text-white mt-6">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-scope-basic-full" name="silence-cutting-scope-basic" value="1" checked>
+                        <label for="silence-cutting-scope-basic-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-scope-basic-inout" name="silence-cutting-scope-basic" value="2">
+                        <label for="silence-cutting-scope-basic-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div class="hidden" id="setting-silence-cutting-nonspeech-basic">
+                <h4 class="text-md text-white mt-6">Speech detection <span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></h4>        
+                <div class="text-xs hidden" id="nospeech-disable-message-basic">Not currently supported on Apple Silicon Macs</div>
+                <div class="flex flex-col mt-1">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="detect-nonspeech-basic" name="detect-nonspeech-basic">
+                        <label for="detect-nonspeech-basic" class="ms-1 text-sm font-medium select-none" >Detect non-speech sections as silences</label>
+                    </div>
+                </div>
+            </div>
+           
+
+            <div id="setting-silence-cutting-format-basic" class="hidden">
+                <h4 class="text-md text-white mt-6">Analysis format</h4>        
+                <!-- <div class="text-xs  mb-1">If encoding is slow or you encounter errors, try switching formats (share feedback!)</div> -->
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-format-basic-wav" name="silence-cutting-format-basic" value="1">
+                        <label for="silence-cutting-format-basic-wav" class="ms-1 text-sm font-medium select-none" >WAV (potentially more accurate)</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-format-basic-mp3" name="silence-cutting-format-basic" value="2" checked>
+                        <label for="silence-cutting-format-basic-mp3" class="ms-1 text-sm font-medium select-none" >MP3 (lower memory usage)</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div id="setting-silence-cutting-algorithm-basic" class="">
+                <h4 class="text-md text-white mt-6">Cutting algorithm</h4>        
+                <!-- <div class="text-xs mb-1">If cutting is slow, try switching algorithms (share feedback!)</div> -->
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-basic-original" name="silence-cutting-algorithm-basic" value="1">
+                        <label for="silence-cutting-algorithm-basic-original" class="ms-1 text-sm font-medium select-none" >Original (for &lt;10 min audio)</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-basic-rapid" name="silence-cutting-algorithm-basic" value="2">
+                        <label for="silence-cutting-algorithm-basic-rapid" class="ms-1 text-sm font-medium select-none" >Rapid (for 10-30 min audio)</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-basic-turbo" name="silence-cutting-algorithm-basic" value="3" checked>
+                        <label for="silence-cutting-algorithm-basic-turbo" class="ms-1 text-sm font-medium select-none" >Turbo (for 30+ min audio)<span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></label>
+                    </div>
+                    <!-- Advanced options for turbo cutting -->
+                    <div class="flex flex-col ms-5 mt-1 hidden" id="turbo-cutting-options-basic">
+                        <div class="flex items-center">                                
+                            <input type="checkbox" id="silence-cutting-basic-turbo-filerefs" name="silence-cutting-basic-turbo-filerefs" checked>
+                            <label for="silence-cutting-basic-turbo-filerefs" class="ms-1 text-xs font-medium select-none" >Advanced: Repeat file references (recommended)</label>
+                        </div>
+                        <div class="flex items-center">                                
+                            <input type="checkbox" id="silence-cutting-basic-turbo-frames" name="silence-cutting-basic-turbo-frames" checked>
+                            <label for="silence-cutting-basic-turbo-frames" class="ms-1 text-xs font-medium select-none" >Advanced: Force PPro to use frames (recommended)</label>
+                        </div>
+                        <div class="flex items-center">                                
+                            <input type="checkbox" id="silence-cutting-basic-turbo-links" name="silence-cutting-basic-turbo-links">
+                            <label for="silence-cutting-basic-turbo-links" class="ms-1 text-xs font-medium select-none" >Advanced: Break clip links (only use if you get an error)</label>
+                        </div>
+                    </div>
+                    <!-- <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-basic-sequential" name="silence-cutting-algorithm-basic" value="3">
+                        <label for="silence-cutting-algorithm-basic-sequential" class="ms-1 text-sm font-medium select-none" >Sequential (2x faster, experimental)</label>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- HIDDEN, REMOVED FEATURE, WE ALWAYS ASSUME "DELETE SILENCES" BECAUSE YOU CAN GO TO MULTITRACK TO DISABLE SPECIFIC AUDIO TRACKS -->
+            <div id="setting-silence-operation-basic" class="hidden">
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Operation</h4>        
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-operation-basic-delete" name="silence-operation-basic" value="1" checked>
+                        <label for="silence-operation-basic-delete" class="ms-1 text-sm font-medium select-none" >Delete silences</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-operation-basic-disable" name="silence-operation-basic" value="2">
+                        <label for="silence-operation-basic-disable" class="ms-1 text-sm font-medium select-none" >Disable silences</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div id="setting-silence-disable-video-basic" class="hidden">
+                <h4 class="text-md text-white mt-6">Video tracks</h4>        
+                <div class="flex flex-col mt-1">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="silence-disable-video-basic" name="silence-disable-video-basic">
+                        <label for="silence-disable-video-basic" class="ms-1 text-sm font-medium select-none" >Also disable video tracks</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 mb-2 flex justify-center hidden" id="container-silence-cutting-go">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-silence-cutting-go">Go!</button>
+            </div>
+             
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="silence-cutting-advanced">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🔇Remove silences</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Cuts out silences from ALL tracks, based on the audio from the selected guidance track(s).</p>
+            </div> 
+        </div>
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <div class="flex justify-center mb-4">
+                <div class="flex justify-center bg-zinc-700 rounded-md">
+                    <button class="outline-none border-none active:bg-gray-600 bg-zinc-700 hover:bg-zinc-500 py-1 px-4 me-1 rounded-md text-white text-xs font-medium menu-open" target-menu="silence-cutting-basic" >BASIC</button>
+                    <button class="outline-none border-none bg-gray-500 py-1 px-4 ms-1 rounded-md text-white text-xs font-medium" >ADVANCED</button>
+                </div>
+            </div>
+
+            
+            <div id="setting-silence-threshold">
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Silence threshold</h4>        
+                    <button class="m-0 rounded-md px-1 py-0 text-xs bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white" id="button-silence-threshold-auto-detect">🪄Auto-detect</button>
+                </div>
+                <div class="flex justify-between">
+                    <div class="flex flex-col w-3/4">
+                        <input id="range-silence-threshold" type="range" value="-30" min="-100" max="0" step="1" class="outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                            
+                        <div id="db-plot"></div>
+                    </div>                    
+                    <!-- <div><span id="value-silence-threshold" class="rounded-md">-30</span> dBFS</div> -->
+                    <div class="w-1/4">
+                        <div class="flex items-center">
+                            <input type="text" id="value-silence-threshold" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-text rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="-30">
+                            <div class="select-none">dBFS</div>
+                        </div>
+                    </div>                   
+                    
+                </div>
+                <!-- <div class="flex justify-between">
+                    <input id="range-silence-threshold" type="range" value="-30" min="-100" max="0" step="1" class="w-3/4 my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                    <div><span id="value-silence-threshold">-30</span> dBFS</div>
+                </div> -->
+            </div>
+
+            <div id="setting-silence-min-duration">
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Minimum silence duration</h4>        
+                    <button class="m-0 rounded-md px-1 py-0 text-xs bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white" id="button-silence-min-duration-reset"><span class="text-gray-300">↺</span> Reset</button>
+                </div>
+                <div class="flex justify-between">
+                    <input id="range-silence-min" type="range" value="750" min="0" max="2000" step="1" class="outline-none w-3/4 my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                    <!-- <div><span id="value-silence-min">500</span> ms</div> -->
+                    <div class="w-1/4">
+                        <div class="flex items-center">
+                            <input type="text" id="value-silence-min" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-text rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="750">
+                            <div class="select-none">ms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="setting-silence-cutting-tracks-advanced" class="hidden">
+                <!-- <h4 class="text-md text-white mt-6 mb-1">Silence cutting tracks</h4>        
+                <div class="flex flex-col">
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm font-medium">Audio track:</div>
+                        <select id="silence-cutting-audio-track-advanced" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="0">Audio 1</option>
+                        </select>
+                    </div>
+                </div> -->
+            </div>
+
+            
+
+
+            <div id="setting-silence-cutting-scope-advanced" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-scope-advanced-full" name="silence-cutting-scope-advanced" value="1" checked>
+                        <label for="silence-cutting-scope-advanced-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-scope-advanced-inout" name="silence-cutting-scope-advanced" value="2">
+                        <label for="silence-cutting-scope-advanced-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div class="hidden" id="setting-silence-cutting-nonspeech-advanced">
+                <h4 class="text-md text-white mt-6">Speech detection <span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></h4>        
+                <div class="text-xs hidden" id="nospeech-disable-message-advanced">Not currently supported on Apple Silicon Macs</div>
+                <div class="flex flex-col mt-1">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="detect-nonspeech-advanced" name="detect-nonspeech-advanced">
+                        <label for="detect-nonspeech-advanced" class="ms-1 text-sm font-medium select-none" >Detect non-speech sections as silences</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="setting-silence-cutting-format-advanced" class="hidden">
+                <h4 class="text-md text-white mt-6">Analysis format</h4>        
+                <!-- <div class="text-xs  mb-1">If encoding is slow or you encounter errors, try switching formats (share feedback!)</div> -->
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-format-advanced-wav" name="silence-cutting-format-advanced" value="1">
+                        <label for="silence-cutting-format-advanced-wav" class="ms-1 text-sm font-medium select-none" >WAV (potentially more accurate)</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-format-advanced-mp3" name="silence-cutting-format-advanced" value="2" checked>
+                        <label for="silence-cutting-format-advanced-mp3" class="ms-1 text-sm font-medium select-none" >MP3 (lower memory usage)</label>
+                    </div>                   
+                </div>
+            </div>
+
+                 
+
+
+            <div class="mt-6 mb-2 flex justify-center hidden" id="container-silence-cutting-advanced-analyze">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-silence-cutting-analyze-go">Analyze audio</button>
+            </div>
+             
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="silence-cutting-advanced-results-list">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="silence-cutting-advanced">< Back</button>
+            <h3 class="text-center text-xl text-white">🔇Remove silences</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Cuts out silences from ALL tracks, based on the audio from a given master track.</p>
+            </div> 
+        </div>
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <!-- <div id="setting-silence-padding-start">
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Padding (start)</h4>        
+                </div>
+                <div class="flex items-center">
+                    <div class="flex flex-col w-3/4">
+                        <input id="range-silence-padding-start" type="range" value="250" min="0" max="2000" step="1" class="outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                            
+                    </div>                    
+                    <div class="w-1/4">
+                        <div class="flex items-center">
+                            <input type="text" id="value-silence-padding-start" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-pointer rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="250">
+                            <div>ms</div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
+            <div id="setting-silence-padding-end">
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Padding (end)</h4>    
+                    
+                    <input id="link-padding" type="checkbox" class="hidden peer/link-padding" checked></input>    
+                    <label for="link-padding" class="peer-checked/link-padding:bg-zinc-700 peer-checked/link-padding:active:bg-zinc-800 active:bg-zinc-800 peer-checked/link-padding:hover:bg-zinc-500 rounded-sm h-4 bg-transparent border-transparent cursor-pointer hover:bg-zinc-500 outline-none focus:bg-zinc-300 focus:text-black flex items-center justify-center"><img src="../lib/images/link.png" class="h-1.5 w-auto py-0.25 px-1 border-white"></input>    
+                </div>
+                <div class="flex items-center">
+                    <div class="flex flex-col w-3/4">
+                        <input id="range-silence-padding-end" type="range" value="250" min="0" max="2000" step="1" class="outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                            
+                    </div>                    
+                    <div class="w-1/4">
+                        <div class="flex items-center">
+                            <input type="text" id="value-silence-padding-end" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-pointer rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="250">
+                            <div>ms</div>
+                        </div>
+                    </div> 
+                </div>
+            </div> -->
+
+            <div id="cut-preview">
+                <div class="flex mt-1 mb-2 items-center">
+                    <h4 class="text-md text-white ">Cut preview</h4>
+                    <div class="relative flex items-center justify-center ms-2 h-4 w-4 select-none text-xs text-zinc-300 rounded-full border-zinc-300 border cursor-pointer group">
+                        <div>?</div>                            
+                        <div class="hidden group-hover:block absolute w-48 text-xs bg-zinc-700 border shadow-lg shadow-black/30 border-zinc-600 text-zinc-300 rounded-md z-50 p-1.5 bottom-3 left-1">This shows how FireCut will cut each silence. Try changing the padding and J-cut offset to see how it changes the cut!</div>
+                    </div>                    
+                </div>
+                <!-- <div class="bg-red-500 h-10 w-full">
+                </div> -->
+                <div class="flex-col">
+                    <div class="w-full h-12 flex items-center">
+                        <div class="w-16">
+                            Video
+                        </div>
+                        <div class="flex-grow bg-zinc-700 h-12 overflow-hidden rounded-md flex justify-center relative">
+                            <img src="../lib/images/red.png" class="h-12 object-fill" id="video-cutbox" style="width:100px;">
+                        </div>
+                    </div>
+                    <div class="w-full h-16 flex items-center">
+                        <div class="w-16">
+                            Audio
+                        </div>
+                        <div class="flex-grow bg-zinc-700 h-12 overflow-hidden rounded-md flex justify-between relative" id="cut-preview-audio">
+                            <img src="../lib/images/wave-L.png" class="h-12 w-auto" id="cut-preview-audio-wave-L">
+                            <img src="../lib/images/wave-line-red.png" class="h-12 object-fill z-10" id="audio-cutbox" style="width:100px;">
+                            <img src="../lib/images/wave-R.png" class="h-12 w-auto" id="cut-preview-audio-wave-R">                            
+                            <img src="../lib/images/wave-line-gray.png" class="h-12 object-fill w-full absolute">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="setting-silence-padding-start">
+                <div class="flex mt-6 mb-1 items-center">
+                    <h4 class="text-md text-white ">Padding</h4>
+                    <div class="relative flex items-center justify-center ms-2 h-4 w-4 select-none text-xs text-zinc-300 rounded-full border-zinc-300 border cursor-pointer group">
+                        <div>?</div>                            
+                        <div class="hidden group-hover:block absolute w-48 text-xs bg-zinc-700 border shadow-lg shadow-black/30 border-zinc-600 text-zinc-300 rounded-md z-50 p-1.5 bottom-3 left-1">Padding adds some "breathing room" when making cuts. Increase it to leave a bit of silence at each cut. Note: FireCut will ignore any silences that are shorter than the padding.</div>
+                    </div>                    
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-grow pe-2">
+                        <div class="flex items-baseline mb-1">
+                            <div class="w-16">
+                                Start
+                            </div>
+                            <div class="flex w-full">
+                                <div class="flex flex-col flex-grow pe-2">
+                                    <input id="range-silence-padding-start" type="range" value="250" min="0" max="2000" step="1" class="outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                            
+                                </div>                    
+                                <div class="w-20">
+                                    <div class="flex items-center">
+                                        <input type="text" id="value-silence-padding-start" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-pointer rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="250">
+                                        <div class="select-none">ms</div>
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                        <div class="flex items-baseline">
+                            <div class="w-16">
+                                End
+                            </div>
+                            <div class="flex w-full">
+                                <div class="flex flex-col flex-grow pe-2">
+                                    <input id="range-silence-padding-end" type="range" value="250" min="0" max="2000" step="1" class="outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                            
+                                </div>                    
+                                <div class="w-20">
+                                    <div class="flex items-center">
+                                        <input type="text" id="value-silence-padding-end" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-pointer rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="250">
+                                        <div class="select-none">ms</div>
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ps-1 w-5">
+                        
+                        <input id="link-padding" type="checkbox" class="hidden peer/link-padding" checked></input>    
+                        <label for="link-padding" class="peer-checked/link-padding:bg-zinc-700 peer-checked/link-padding:active:bg-zinc-800 active:bg-zinc-800 peer-checked/link-padding:hover:bg-zinc-500 rounded-sm w-4 bg-transparent border-transparent cursor-pointer hover:bg-zinc-500 outline-none focus:bg-zinc-300 focus:text-black flex items-center justify-center"><img src="../lib/images/link_vertical.png" class="w-1.5 h-auto px-0.25 py-1 border-white"></input>    
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                
+                <div class="flex mt-6 mb-1 items-center">
+                    <h4 class="text-md text-white ">J-cuts</h4>
+                    <div class="relative flex items-center justify-center ms-2 h-4 w-4 select-none text-xs text-zinc-300 rounded-full border-zinc-300 border cursor-pointer group">
+                        <div>?</div>                            
+                        <div class="hidden group-hover:block absolute w-48 text-xs bg-zinc-700 border shadow-lg shadow-black/30 border-zinc-600 text-zinc-300 rounded-md z-50 p-1.5 bottom-3 left-1">Give your cuts an artistic flair by making J-cuts. The offset indicates how many frames earlier the audio should come in, compared to the video.</div>
+                    </div>                    
+                </div>
+
+                <div class="flex items-center">
+                    <div class="flex-grow pe-2">
+                        <div class="flex items-baseline mb-1">
+                            <div class="w-16">
+                                Offset
+                            </div>
+                            <div class="flex w-full">
+                                <div class="flex flex-col flex-grow pe-2">
+                                    <input id="range-silence-cutting-advanced-jcut-offset" type="range" value="0" min="0" max="25" step="1" class="outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                            
+                                </div>                    
+                                <div class="w-20">
+                                    <div class="flex items-center">
+                                        <input type="text" id="value-silence-cutting-advanced-jcut-offset" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-pointer rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="0">
+                                        <div class="select-none">frames</div>
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="ps-1 w-5">
+                        <!-- EMPTY SPACE FOR ALIGNMENT   -->
+                    </div>
+                </div>
+           
+                
+            </div>
+
+            
+            <div id="setting-silence-cutting-algorithm-advanced" class="">
+                <h4 class="text-md text-white mt-6">Cutting algorithm</h4>        
+                <div class="text-xs mb-1">If cutting is slow, try switching algorithms (share feedback!)</div>
+                <div class="flex flex-col">                    
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-advanced-original" name="silence-cutting-algorithm-advanced" value="1" >
+                        <label for="silence-cutting-algorithm-advanced-original" class="ms-1 text-sm font-medium select-none" >Original (for &lt;10 min audio)</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-advanced-rapid" name="silence-cutting-algorithm-advanced" value="2">
+                        <label for="silence-cutting-algorithm-advanced-rapid" class="ms-1 text-sm font-medium select-none" >Rapid (for 10-30 min audio)</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-advanced-turbo" name="silence-cutting-algorithm-advanced" value="3" checked>
+                        <label for="silence-cutting-algorithm-advanced-turbo" class="ms-1 text-sm font-medium select-none" >Turbo (for 30+ min audio)<span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></label>
+                    </div>           
+                    <!-- Advanced options for turbo cutting -->
+                    <div class="flex flex-col ms-5 mt-1 hidden" id="turbo-cutting-options-advanced">
+                        <div class="flex items-center">                                
+                            <input type="checkbox" id="silence-cutting-advanced-turbo-filerefs" name="silence-cutting-advanced-turbo-filerefs" checked>
+                            <label for="silence-cutting-advanced-turbo-filerefs" class="ms-1 text-xs font-medium select-none" >Advanced: Repeat file references (recommended)</label>
+                        </div>
+                        <div class="flex items-center">                                
+                            <input type="checkbox" id="silence-cutting-advanced-turbo-frames" name="silence-cutting-advanced-turbo-frames" checked>
+                            <label for="silence-cutting-advanced-turbo-frames" class="ms-1 text-xs font-medium select-none" >Advanced: Force PPro to use frames (recommended)</label>
+                        </div>
+                        <div class="flex items-center">                                
+                            <input type="checkbox" id="silence-cutting-advanced-turbo-links" name="silence-cutting-advanced-turbo-links">
+                            <label for="silence-cutting-advanced-turbo-links" class="ms-1 text-xs font-medium select-none" >Advanced: Break clip links (only use if you get an error)</label>
+                        </div>
+                    </div>         
+                    <!-- <div class="flex items-center">                                
+                        <input type="radio" id="silence-cutting-algorithm-advanced-sequential" name="silence-cutting-algorithm-advanced" value="3">
+                        <label for="silence-cutting-algorithm-advanced-sequential" class="ms-1 text-sm font-medium select-none" >Sequential (2x faster, experimental)</label>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- HIDDEN, REMOVED FEATURE, WE ALWAYS ASSUME "DELETE SILENCES" BECAUSE YOU CAN GO TO MULTITRACK TO DISABLE SPECIFIC AUDIO TRACKS -->
+            <div id="setting-silence-operation-advanced" class="hidden">
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Operation</h4>        
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-operation-advanced-delete" name="silence-operation-advanced" value="1" checked>
+                        <label for="silence-operation-advanced-delete" class="ms-1 text-sm font-medium select-none" >Delete silences</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-operation-advanced-disable" name="silence-operation-advanced" value="2">
+                        <label for="silence-operation-advanced-disable" class="ms-1 text-sm font-medium select-none" >Disable silences</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div id="setting-silence-disable-video-advanced" class="hidden">
+                <h4 class="text-md text-white mt-6">Video tracks</h4>        
+                <div class="flex flex-col mt-1">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="silence-disable-video-advanced" name="silence-disable-video-advanced">
+                        <label for="silence-disable-video-advanced" class="ms-1 text-sm font-medium select-none" >Also disable video tracks</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 mb-2 flex justify-center">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-cut-silences-advanced-go">Go!</button>
+            </div>
+        </div>
+        
+        <div class="my-6 py-4 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <!-- <div class="flex justify-center mb-4">
+                <div class="flex justify-center bg-zinc-700 rounded-md">
+                    <button class="border-none bg-gray-500 py-1 px-4 me-1 rounded-md text-white text-xs font-medium" >LIST</button>
+                    <button class="border-none active:bg-gray-600 bg-zinc-700 hover:bg-zinc-500 py-1 px-4 ms-1 rounded-md text-white text-xs font-medium" target-menu="silence-cutting-advanced-results-waveform" >WAVEFORM (coming soon)</button>
+                </div>
+            </div> -->
+
+            <!-- <div id="tooltip-nonspeech" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-light text-white transition-opacity duration-100 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                Not completely silent. Included because no speech detected.
+                <div class="tooltip-arrow" data-popper-arrow></div>
+            </div> -->
+
+            <div class="text-lg font-bold mb-4 text-white flex justify-center items-center ">
+                <img src="../lib/images/tick-128.png" class="w-6 h-6 me-1.5">
+                <div><span id="num-silences">[ERROR]</span> silences found</div>
+            </div>
+
+            <div id="nonspeech-legend" class="text-xs text-center mb-4 hidden">
+                <span class="bg-cyan-600 py-0.5 px-1 rounded-md text-white">Blue</span> = Not completely silent, but no speech detected.
+            </div>
+
+            <div class="text-xs mb-4 text-white flex justify-center items-center">
+                <button class="m-1 p-1 px-2 w-28 rounded-md hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500 outline-none" id="button-silence-previous">
+                    &lt;&emsp;Previous silence
+                </button>
+                <button class="m-1 p-1 px-2 w-28 rounded-md hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500 outline-none" id="button-silence-next">
+                    Next silence&emsp;&gt;
+                </button>
+            </div>
+
+
+
+            <div class="bg-zinc-600 my-2 pb-4 pt-2 px-2 rounded-xl" id="silences-table">
+    
+                <!-- <div class="grid grid-cols-4">
+                    <div class="col-span-1"></div>
+                    <div class="col-span-1">SILENCE START</div>
+                    <div class="col-span-1">SILENCE END</div>
+                    <div class="col-span-1"></div>
+
+                    <div class="col-span-1">1</div>
+                    <div class="col-span-2"><button class="button-silence-time w-full m-0 rounded-md px-1 hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500" ticks="1513935360000">00:00:05:24</button></div>
+                    <div class="col-span-1"><button class="button-silence-delete m-0 rounded-md w-full px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button></div>
+                </div> -->
+                <table class="w-full text-sm">
+                    <thead class="text-xs uppercase text-gray-400">
+                        <tr>
+                            <th scope="col" class="p-0"></th>
+                            <th scope="col" class="p-1 px-2 text-center flex justify-between">
+                                <div class="px-1">Silence Start</div>
+                                <div> </div>
+                                <div class="px-1">Silence End</div>                                
+                            </th>
+                            <!-- <th scope="col" class="p-1 px-2 text-center"></th>
+                            <th scope="col" class="p-1 px-2 text-center">Silence End</th> -->
+                            <th scope="col" class="ps-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- <tr class="silences-table-row" silence-number="1">
+                            <td class="p-1 text-right">
+                                1
+                            </td>
+                            <td class="px-1 font-medium col-span-3">
+                                <button class="flex justify-between button-silence-time w-full m-0 rounded-md px-1 hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500" ticks="1513935360000" start="" end="">
+                                    <div class="px-1">00:00:05:24</div>
+                                    <div class="px-1">➔</div>
+                                    <div class="px-1">00:00:06:13</div>  
+                                </button>                            
+                            </td>
+                            <td class="ps-1">
+                                <button class="button-silence-delete m-0 rounded-md w-full px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button>
+                            </td>                        
+                        </tr> -->
+                        </tbody>
+                </table>
+                    
+    
+            </div>
+
+
+            
+            
+            <div class="mt-6 mb-2 flex justify-center hidden" id="container-silence-cutting-advanced-analyze">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-silence-cutting-analyze-go">Analyze audio</button>
+            </div>
+             
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="remove-filler-words">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🗣️Remove filler words</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex flex-col justify-center text-sm mb-3 text-left">
+                <div class="select-none bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Beta:<span class="ms-1 text-xs text-purple-200">5 min limit. Try it out and share your feedback!</span></div>
+                <p class="mt-2">Cuts out filler words (umm, uhh, etc.) from ALL tracks, based on the audio from the selected guidance track(s).</p>
+                <p class="mt-2">For best results:</p>
+                <ul class="list-disc ms-5">
+                    <li>Don't include silences (cut them out first!)</li>
+                    <li>Ensure your audio is clear, loud and in English</li>
+                    <li>Only select the relevant audio tracks below</li>
+                </ul>
+            </div> 
+        </div>
+
+        <div class="my-6 pb-4 pt-0.5 px-4 bg-zinc-600 rounded-xl">
+
+            
+            <div id="setting-remove-filler-words-tracks" class="hidden">
+            </div>
+
+
+            <div id="setting-remove-filler-words-scope" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-scope-full" name="remove-filler-words-scope" value="1">
+                        <label for="remove-filler-words-scope-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-scope-inout" name="remove-filler-words-scope" value="2" checked>
+                        <label for="remove-filler-words-scope-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>            
+
+            <div id="setting-remove-filler-words-prompt" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Filler words coverage</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-prompt-1" name="remove-filler-words-prompt" value="1" checked>
+                        <label for="remove-filler-words-prompt-1" class="ms-1 text-sm font-medium select-none" >(1) Basic</label>
+                    </div>  
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-prompt-2" name="remove-filler-words-prompt" value="2" >
+                        <label for="remove-filler-words-prompt-2" class="ms-1 text-sm font-medium select-none" >(2) Comprehensive</label>
+                    </div> 
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-prompt-3" name="remove-filler-words-prompt" value="3" >
+                        <label for="remove-filler-words-prompt-3" class="ms-1 text-sm font-medium select-none" >(3) Extreme</label>
+                    </div>                
+                </div>
+            </div>
+
+            <div id="setting-remove-filler-words-temperature">
+                <div class="flex mt-6 mb-1 items-center">
+                    <h4 class="text-md text-white ">Randomness</h4>
+                    <!-- <abbr class="no-underline" title="Increasing randomness increases chances of finding filler words, however very large values might generate 'false positives' (find filler words where they don't exist)">
+                        <div class="flex items-center justify-center ms-2 h-4 w-4  cursor-default select-none text-xs text-zinc-300 rounded-full border-zinc-300 border">
+                            <div>?</div>                            
+                        </div>
+                    </abbr> -->
+                    <div class="relative flex items-center justify-center ms-2 h-4 w-4 select-none text-xs text-zinc-300 rounded-full border-zinc-300 border cursor-pointer group">
+                        <div>?</div>                            
+                        <div class="hidden group-hover:block absolute w-48 text-xs bg-zinc-700 border shadow-lg shadow-black/30 border-zinc-600 text-zinc-300 rounded-md z-50 p-1.5 bottom-3 left-1">Increasing randomness increases chances of finding filler words, however very large values might generate 'false positives' (find filler words where they don't exist)</div>
+                    </div> 
+                </div>
+                <div class="flex justify-between items-center">
+                    <input id="range-remove-filler-words-temperature" type="range" value="30" min="0" max="100" step="5" class="outline-none w-10/12 my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                    <div class="w-2/12">                        
+                        <div  class="w-full select-none text-right mx-0.5 px-0.5 bg-transparent border-transparent rounded-md outline-none focus:border-transparent ">
+                            <span id="value-remove-filler-words-temperature">30</span>%
+                        </div>                        
+                    </div>
+                </div>                
+            </div>
+
+            <div id="setting-remove-filler-words-timestamping" class="">
+                <div class="flex mt-6 mb-1 items-center">
+                    <h4 class="text-md text-white ">Timestamping strategy</h4>
+                    <!-- <abbr class="no-underline" title="What approach to use for finding word timestamps">
+                        <div class="flex items-center justify-center ms-2 h-4 w-4  cursor-default select-none text-xs text-zinc-300 rounded-full border-zinc-300 border">
+                            <div>?</div>                            
+                        </div>
+                    </abbr> -->
+                    <div class="relative flex items-center justify-center ms-2 h-4 w-4 select-none text-xs text-zinc-300 rounded-full border-zinc-300 border cursor-pointer group">
+                        <div>?</div>                            
+                        <div class="hidden group-hover:block absolute w-48 text-xs bg-zinc-700 border shadow-lg shadow-black/30 border-zinc-600 text-zinc-300 rounded-md z-50 p-1.5 bottom-3 left-1">What approach to use for finding word timestamps</div>
+                    </div> 
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-timestamping-prompt" name="remove-filler-words-timestamping" value="prompt" checked>
+                        <label for="remove-filler-words-timestamping-prompt" class="ms-1 text-sm font-medium select-none" >Use prompt (more reliable)</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="remove-filler-words-timestamping-transcript" name="remove-filler-words-timestamping" value="transcript" >
+                        <label for="remove-filler-words-timestamping-transcript" class="ms-1 text-sm font-medium select-none" >Use transcript</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="" class="hidden">
+                <h4 class="text-md text-white mt-6 mb-1">Language <span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-en" name="setting-remove-filler-words-language" value="en" checked>
+                        <label for="setting-remove-filler-words-language-en" class="ms-1 text-sm font-medium select-none" >English</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-fr" name="setting-remove-filler-words-language" value="fr">
+                        <label for="setting-remove-filler-words-language-fr" class="ms-1 text-sm font-medium select-none" >French</label>
+                    </div>                   
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-de" name="setting-remove-filler-words-language" value="de">
+                        <label for="setting-remove-filler-words-language-de" class="ms-1 text-sm font-medium select-none" >German</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-es" name="setting-remove-filler-words-language" value="es">
+                        <label for="setting-remove-filler-words-language-es" class="ms-1 text-sm font-medium select-none" >Spanish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-it" name="setting-remove-filler-words-language" value="it">
+                        <label for="setting-remove-filler-words-language-it" class="ms-1 text-sm font-medium select-none" >Italian</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-pl" name="setting-remove-filler-words-language" value="pl">
+                        <label for="setting-remove-filler-words-language-pl" class="ms-1 text-sm font-medium select-none" >Polish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-remove-filler-words-language-pt" name="setting-remove-filler-words-language" value="pt">
+                        <label for="setting-remove-filler-words-language-pt" class="ms-1 text-sm font-medium select-none" >Portuguese</label>
+                    </div>
+                </div>
+            </div>
+
+           
+
+                 
+
+
+            <div class="mt-6 mb-2 flex justify-center hidden" id="container-remove-filler-words-analyze">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-remove-filler-words-analyze">Analyze audio</button>
+            </div>
+             
+        </div>
+    </div>
+
+    <!-- <div class="container mx-auto px-4 menu hidden" menu-name="remove-filler-words-results-old">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="remove-filler-words">< Back</button>
+            <h3 class="text-center text-xl text-white">🗣️Remove filler words</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Cuts out filler words (umm, uhh, etc.) from ALL tracks, based on the audio from the selected guidance track(s).</p>
+            </div> 
+        </div>
+
+        <div class="my-6 py-4 px-4 bg-zinc-600 rounded-xl">
+
+            <div class="text-white select-none">
+                Transcript
+            </div>
+            <div class="text-xs mb-2 select-none">
+                Click on any word to select it for removal
+            </div>
+
+            
+            <div id="remove-filler-words-results" class="p-1 bg-zinc-700 rounded-lg">
+                <div class="remove-filler-words-results-paragraph flex flex-wrap mb-5" segment-index="0">
+                    <button segment-index="0" word-index="0" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="1" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="2" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="3" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="4" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="5" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="6" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="delete">Remove</button>
+                    <button segment-index="0" word-index="7" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="8" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="9" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                </div>
+            </div>
+
+            
+            <div class="mt-2 flex justify-center">                
+                <button class="py-0 mt- h-full px-1 rounded-sm font-medium text-sm bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none outline-none" id="button-reset-selection">Reset selection</button>
+            </div>
+
+            <div class="text-white select-none mt-8">
+                Timestamp adjustment
+            </div>
+            <div class="flex flex-col">
+                <div class="flex w-full mt-1 justify-between">
+                    <h4 class="text-sm w-32">Offset (<span id="value-filler-words-timestamp-offset">0.0</span>s)</h4>        
+                    <div class="flex items-center flex-grow justify-end">
+                        <input id="range-filler-words-timestamp-offset" type="range" value="0" min="-2" max="2" step="0.1" class="flex-grow w-max outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700 outline-none">
+                        <abbr class="no-underline" title="Reset">
+                            <button class="w-18 ms-2 m-0 rounded-md px-1 py-0 text-xs bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white outline-none" id="button-filler-words-timestamp-offset-reset"><span class="text-gray-300">↺</span></button>
+                        </abbr>
+                    </div>
+                    
+                </div>
+                <div class="flex w-full mt-1 justify-between">
+                    <h4 class="text-sm w-96">Bridge any gaps between words</h4>        
+                    <div class="flex items-center w-full justify-end">
+                        <input id="checkbox-filler-words-timestamp-bridge" type="checkbox" class="ms-2 cursor-pointer outline-none">
+                        <abbr class="no-underline" title="Reset">
+                            <button class="w-18 ms-2 m-0 rounded-md px-1 py-0 text-xs bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white outline-none" id="button-filler-words-timestamp-bridge-reset"><span class="text-gray-300">↺</span></button>
+                        </abbr>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 mb-2 flex justify-center" id="container-remove-filler-words-go">                
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-remove-filler-words-go">Cut selected words</button>
+            </div>
+             
+        </div>
+    </div> -->
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="remove-filler-words-results">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="remove-filler-words">< Back</button>
+            <h3 class="text-center text-xl text-white">🗣️Remove filler words</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex flex-col justify-center text-sm mb-3 text-left">
+                <div class="select-none bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Beta:<span class="ms-1 text-xs text-purple-200">Did it work? Please share feedback!</span></div>
+                <p class="mt-2">Cuts out filler words (umm, uhh, etc.) from ALL tracks, based on the audio from the selected guidance track(s).</p>
+                
+            </div> 
+        </div>
+
+        <div class="my-6 py-4 px-4 bg-zinc-600 rounded-xl">
+
+            <div class="text-white select-none mb-2">
+                Phrases with filler words
+            </div>
+            <div class="text-xs mb-2 select-none flex">
+                <div class=""><span class="text-white">Left-click:</span> Go to word</div>
+                <div class="ms-4"><span class="text-white">Right-click:</span> Mark/unmark for removal</div>
+            </div>
+
+            
+            <div id="remove-filler-words-results" class="py-1 rounded-lg" oncontextmenu="return false;">
+
+                <div class="remove-filler-words-results-chunk flex flex-wrap mb-5 bg-zinc-700 rounded-lg p-1" segment-index="0">
+                    <p class="text-zinc-600">This is the transcript before we get better timestamps</p>
+                    <div class="remove-filler-words-results-paragraph-spinner p-1 w-full bg-transparent rounded-xl flex  justify-center items-center">
+                        <svg aria-hidden="true" class="w-6 h-6 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                        </svg>
+                        <p>Getting timestamps</p>
+                    </div>
+                </div>
+
+                <div class="remove-filler-words-results-chunk flex flex-wrap mb-5 bg-zinc-700 rounded-lg p-1" segment-index="0">
+                    <button segment-index="0" word-index="0" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="1" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="2" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="3" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="4" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="5" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="6" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="delete">Remove</button>
+                    <button segment-index="0" word-index="7" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="8" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                    <button segment-index="0" word-index="9" class="text-base/snug h-5 active:text-white active:bg-zinc-800 hover:bg-zinc-700 outline-none my-0 py-0 me-0.5 px-0.5 border-none rounded-sm data-[action=delete]:text-red-400 data-[action=delete]:line-through" data-action="none">Remove</button>
+                </div>
+
+            </div>
+
+            
+            <!-- <div class="mt-2 flex justify-center">                
+                <button class="py-0 mt- h-full px-1 rounded-sm font-medium text-sm bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none outline-none" id="button-reset-selection">Reset selection</button>
+            </div> -->
+
+            <!-- <div class="text-white select-none mt-8">
+                Timestamp adjustment
+            </div>
+            <div class="flex flex-col">
+                <div class="flex w-full mt-1 justify-between">
+                    <h4 class="text-sm w-32">Offset (<span id="value-filler-words-timestamp-offset">0.0</span>s)</h4>        
+                    <div class="flex items-center flex-grow justify-end">
+                        <input id="range-filler-words-timestamp-offset" type="range" value="0" min="-2" max="2" step="0.1" class="flex-grow w-max outline-none my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700 outline-none">
+                        <abbr class="no-underline" title="Reset">
+                            <button class="w-18 ms-2 m-0 rounded-md px-1 py-0 text-xs bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white outline-none" id="button-filler-words-timestamp-offset-reset"><span class="text-gray-300">↺</span></button>
+                        </abbr>
+                    </div>
+                    
+                </div>
+                <div class="flex w-full mt-1 justify-between">
+                    <h4 class="text-sm w-96">Bridge any gaps between words</h4>        
+                    <div class="flex items-center w-full justify-end">
+                        <input id="checkbox-filler-words-timestamp-bridge" type="checkbox" class="ms-2 cursor-pointer outline-none">
+                        <abbr class="no-underline" title="Reset">
+                            <button class="w-18 ms-2 m-0 rounded-md px-1 py-0 text-xs bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white outline-none" id="button-filler-words-timestamp-bridge-reset"><span class="text-gray-300">↺</span></button>
+                        </abbr>
+                    </div>
+                </div>
+
+            </div> -->
+
+            <div class="mt-4 mb-2 flex justify-center">                
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-remove-filler-words-markers">Add markers to timeline</button>
+            </div>
+
+            <div class="mt-2 mb-2 flex justify-center" id="container-remove-filler-words-go">                
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-remove-filler-words-go">Cut selected words</button>
+            </div>
+             
+        </div>
+    </div>
+
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="zooms">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🔍 Add zooms</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex flex-col justify-center text-sm mb-3 text-left">
+                <p>Adds zoom cuts at specific intervals to emphasize certain words, based on what is being spoken.</p>
+                <div class="mt-2">For best results:
+                    <ul class="list-disc ms-5">
+                        <li>Ensure your audio does not have repetitions / multiple takes</li>
+                        <li>Ensure your audio is clear and loud</li>
+                        <li>Mute any tracks with music / sound effects</li>
+                    </ul>
+                </div>
+                
+            </div> 
+        </div>
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+              
+            <div id="setting-zoom-frequency">
+                <h4 class="text-md text-white mt-2 mb-1">Zoom frequency</h4>        
+                <div class="flex flex-col">
+                    <div class="flex justify-between">
+                        <div class="text-sm font-medium select-none">Low (less frequent)</div>
+                        <!-- <div class="text-sm font-medium">Default</div> -->
+                        <div class="text-sm font-medium select-none text-right">High (very frequent)</div>
+                    </div>
+                    <input id="range-zoom-frequency" type="range" value="50" step="10" class="outline-none my-2 w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                </div>
+            </div>
+
+            <div id="setting-zoom-style">
+                <h4 class="text-md text-white mt-5">Zoom style</h4> 
+                <div class="flex flex-col">                
+                    <div class="flex items-center justify-between mt-1">
+                        <div class="text-sm font-medium select-none">Animated</div>  
+                        <input id="checkbox-zoom-animated" type="checkbox" checked class="ms-2 cursor-pointer">
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <div class="text-sm font-medium select-none">Animation duration (0.05 to 1.00 sec)</div>  
+                        <input class="w-10 bg-white border-transparent px-1 border-slate-300 rounded-md text-right text-black text-sm outline-none" id="textinput-zoom-animation-duration" type="text" value="0.4">
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <div class="text-sm font-medium select-none">Scale (100 for no zoom)</div>  
+                        <input class="w-10 bg-white border-transparent px-1 border-slate-300 rounded-md text-right text-black text-sm outline-none" id="textinput-zoom-scale" type="text" value="120">
+                    </div>
+                </div>
+            </div>
+
+            <div id="" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-scope-full" name="setting-zoom-scope" value="1" checked>
+                        <label for="setting-zoom-scope-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-scope-inout" name="setting-zoom-scope" value="2">
+                        <label for="setting-zoom-scope-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div id="" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Language <span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-en" name="setting-zoom-language" value="en" checked>
+                        <label for="setting-zoom-language-en" class="ms-1 text-sm font-medium select-none" >English</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-fr" name="setting-zoom-language" value="fr">
+                        <label for="setting-zoom-language-fr" class="ms-1 text-sm font-medium select-none" >French</label>
+                    </div>                   
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-de" name="setting-zoom-language" value="de">
+                        <label for="setting-zoom-language-de" class="ms-1 text-sm font-medium select-none" >German</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-es" name="setting-zoom-language" value="es">
+                        <label for="setting-zoom-language-es" class="ms-1 text-sm font-medium select-none" >Spanish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-it" name="setting-zoom-language" value="it">
+                        <label for="setting-zoom-language-it" class="ms-1 text-sm font-medium select-none" >Italian</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-pl" name="setting-zoom-language" value="pl">
+                        <label for="setting-zoom-language-pl" class="ms-1 text-sm font-medium select-none" >Polish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-zoom-language-pt" name="setting-zoom-language" value="pt">
+                        <label for="setting-zoom-language-pt" class="ms-1 text-sm font-medium select-none" >Portuguese</label>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="mt-6 mb-2 flex justify-center">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-zooms-go">Go!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="preview-add-markers">        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="chapters">< Back</button>
+            <h3 class="text-center text-xl text-white">Add markers</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Adds a marker in your timeline for every chapter. These can be helpful for cutting / aligning your footage, adding B-roll and syncing music.</p>
+            </div> 
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">                
+                <video autoplay loop muted class="rounded-lg">
+                    <source src="../lib/assets/preview_add_markers.mp4" type="video/mp4">
+                </video>
+            </div> 
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="preview-add-clips">        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="chapters">< Back</button>
+            <h3 class="text-center text-xl text-white">Add clips</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Adds a divider clip for every chapter (on a new track).</p>
+            </div> 
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">                
+                <video autoplay loop muted class="rounded-lg">
+                    <source src="../lib/assets/preview_section_divider.mp4" type="video/mp4">
+                </video>
+            </div> 
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="chapters">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🔖Add chapters</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Detects chapters based on what is being spoken. Produces a list you can review, and then adds them as markers and/or clips to the timeline. <br><br>Detection takes approx. 2 mins for every 10 mins of audio.</p>
+            </div> 
+        </div>
+
+        <div class="my-6 py-4 px-4 bg-zinc-600 rounded-xl">   
+
+            <div id="" class="">
+                <h4 class="text-md text-white mt-0 mb-1">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-scope-full" name="setting-detect-chapters-scope" value="1" checked>
+                        <label for="setting-detect-chapters-scope-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-scope-inout" name="setting-detect-chapters-scope" value="2">
+                        <label for="setting-detect-chapters-scope-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div id="" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Language <span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-en" name="setting-detect-chapters-language" value="en" checked>
+                        <label for="setting-detect-chapters-language-en" class="ms-1 text-sm font-medium select-none" >English</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-fr" name="setting-detect-chapters-language" value="fr">
+                        <label for="setting-detect-chapters-language-fr" class="ms-1 text-sm font-medium select-none" >French</label>
+                    </div>                   
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-de" name="setting-detect-chapters-language" value="de">
+                        <label for="setting-detect-chapters-language-de" class="ms-1 text-sm font-medium select-none" >German</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-es" name="setting-detect-chapters-language" value="es">
+                        <label for="setting-detect-chapters-language-es" class="ms-1 text-sm font-medium select-none" >Spanish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-it" name="setting-detect-chapters-language" value="it">
+                        <label for="setting-detect-chapters-language-it" class="ms-1 text-sm font-medium select-none" >Italian</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-pl" name="setting-detect-chapters-language" value="pl">
+                        <label for="setting-detect-chapters-language-pl" class="ms-1 text-sm font-medium select-none" >Polish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-detect-chapters-language-pt" name="setting-detect-chapters-language" value="pt">
+                        <label for="setting-detect-chapters-language-pt" class="ms-1 text-sm font-medium select-none" >Portuguese</label>
+                    </div>
+                </div>
+            </div>
+                  
+            <div class="flex justify-center" id="detect-chapters-go">
+                <button class="mt-6 py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-detect-chapters-go">Detect chapters</button>
+            </div>
+            
+        </div>
+
+        <div class="bg-zinc-600 my-6 pb-4 pt-2 px-2 rounded-xl hidden" id="chapters-table">
+            <div class="flex font-medium justify-end mb-4 text-xs">
+                <button id="button-chapters-hide" class="active:bg-gray-600 active:border-gray-600 bg-gray-500 border-gray-500 hover:bg-gray-400 hover:border-gray-400 px-1 rounded-md text-white w-20">Hide results</button>
+            </div>
+
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs uppercase text-gray-400">
+                    <tr>
+                        <th scope="col" class="p-0"></th>
+                        <th scope="col" class="p-1 px-2">Chapter name</th>
+                        <th scope="col" class="pe-1 w-12 text-right">mm:ss</th>
+                        <th scope="col" class="ps-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- <tr class="chapter" chapter-number="1">
+                        <td class="p-1 text-right">
+                            1
+                        </td>
+                        <td class="px-1 font-medium text-gray-900 whitespace-nowrap">
+                            <input class="chapter-name px-1 w-full rounded-md bg-gray-100 border-gray-300 text-black" type="text" value="Apple MacBook Pro 17assasfsafsasfasafsafsafasfsafsafsafaSAGSDGDSGDSGDSDSG">
+                        </td>
+                        <td class="p-1 flex justify-end">
+                            <input class="chapter-time px-1 w-10 text-right rounded-md bg-gray-100 border-gray-300 text-black" type="text" value="2">
+                        </td>
+                        <td class="ps-1">
+                            <button class="button-chapter-delete m-0 rounded-md w-full px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button>
+                        </td>                        
+                    </tr>
+                    <tr>
+                        <td class="p-1 text-right">
+                            12
+                        </td>
+                        <td class="px-1 font-medium text-gray-900 whitespace-nowrap">
+                            <input class="px-1 w-full rounded-md bg-gray-100 border-gray-300 text-black" type="text" value="Apple MacBook Pro 17assasfsafsasfasafsafsafasfsafsafsafaSAGSDGDSGDSGDSDSG">
+                        </td>
+                        <td class="p-1 flex justify-end">
+                            <input class="px-1 w-10 text-right rounded-md bg-gray-100 border-gray-300 text-black" type="text" value="2">
+                        </td>
+                        <td class="ps-1">
+                            <button id="button-chapter-delete" class="m-0 rounded-md w-full px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button>
+                        </td>                        
+                    </tr> -->
+                    
+                </tbody>
+            </table>
+
+            <div class="flex justify-center">
+                <button id="button-chapter-add" class="m-2 rounded-md w-20 px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">+</button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mx-2 mb-4">
+                <div class="col-span-2">
+                    <button class="w-full py-0 mt-4 h-full px-2 rounded-lg  font-bold text-base bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-add-markers-go">Add markers</button>
+                </div>
+                <div class="col-span-1">
+                    <button class="w-full py-0 mt-4 h-full px-1 rounded-lg font-medium text-sm bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="preview-add-markers">(Preview)</button>
+                </div>
+                <div class="col-span-2">
+                    <button class="w-full py-0 mt-4 h-full px-2 rounded-lg  font-bold text-base bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-add-chapter-clips-go">Add clips</button>
+                </div>
+                <div class="col-span-1">
+                    <button class="w-full py-0 mt-4 h-full px-1 rounded-lg font-medium text-sm bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="preview-add-clips">(Preview)</button>
+                </div>
+              </div>
+
+
+        </div>
+
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="takes">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">📑Remove repetition</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <!-- <div class="flex justify-center text-sm mb-2 text-left bg-transparent text-red-300 rounded-md py-2">                
+                <p class="my-0">This is a brand new feature just learning to walk! 😊 Please limit to 5 mins of footage, and share feedback on how it worked for you.</p>
+            </div> -->
+            <div class="flex justify-center text-sm mb-3 text-left">                
+                <p>Detects parts of your sequence where you have repeated phrases. Produces a list you can review to cut out bad takes.<br><br>Click on <span class="bg-gray-500 rounded-md text-white px-1">✓</span> to accept a specific take and <span class="underline font-bold">DELETE</span> all other takes for that phrase.</p>
+            </div> 
+        </div>
+
+        <div class="my-6 py-4 px-4 bg-zinc-600 rounded-xl">          
+            <div id="setting-detect-repetition-scope" class="mb-4">
+                <h4 class="text-md text-white">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-detect-repetition-scope-full" name="silence-detect-repetition-scope" value="1" checked>
+                        <label for="silence-detect-repetition-scope-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="silence-detect-repetition-scope-inout" name="silence-detect-repetition-scope" value="2">
+                        <label for="silence-detect-repetition-scope-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>
+
+
+            <div id="" class="">
+                <h4 class="text-md text-white mt-6 mb-1">Language <span class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md">🧪 Experimental</span></h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-en" name="setting-repetition-language" value="en" checked>
+                        <label for="setting-repetition-language-en" class="ms-1 text-sm font-medium select-none" >English</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-fr" name="setting-repetition-language" value="fr">
+                        <label for="setting-repetition-language-fr" class="ms-1 text-sm font-medium select-none" >French</label>
+                    </div>                   
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-de" name="setting-repetition-language" value="de">
+                        <label for="setting-repetition-language-de" class="ms-1 text-sm font-medium select-none" >German</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-es" name="setting-repetition-language" value="es">
+                        <label for="setting-repetition-language-es" class="ms-1 text-sm font-medium select-none" >Spanish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-it" name="setting-repetition-language" value="it">
+                        <label for="setting-repetition-language-it" class="ms-1 text-sm font-medium select-none" >Italian</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-pl" name="setting-repetition-language" value="pl">
+                        <label for="setting-repetition-language-pl" class="ms-1 text-sm font-medium select-none" >Polish</label>
+                    </div>
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-repetition-language-pt" name="setting-repetition-language" value="pt">
+                        <label for="setting-repetition-language-pt" class="ms-1 text-sm font-medium select-none" >Portuguese</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-center">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-detect-repetition-go">Detect repetition</button>
+            </div>
+            
+        </div>
+
+        <div id="repetition-results">        
+            <!-- <div class="bg-zinc-600 my-4 pb-2 pt-2 px-2 rounded-xl repetition-item" repetition-item-number="1">
+                <div class="bg-zinc-700 m-2 p-2 rounded-lg text-sm repetition-item-text">
+                    have a centralized place where you can capture your thoughts
+                </div> 
+                <div class="mx-2">
+                    <table class="w-full text-sm repetition-item-table">
+                        <thead class="text-xs uppercase text-gray-400">
+                            <tr>
+                                <th scope="col" class="p-0"></th>
+                                <th scope="col" class="p-1 px-2 text-center flex justify-between">
+                                    <div class="px-1">Take Start</div>
+                                    <div> </div>
+                                    <div class="px-1">Take End</div>                                
+                                </th>
+                                <th scope="col" class="ps-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="repetition-item-table-row" take-number="1">
+                                <td class="p-1 text-right">
+                                    1
+                                </td>
+                                <td class="px-1 font-medium col-span-3">
+                                    <button class="flex justify-between button-take-time-section w-full m-0 rounded-md px-1 hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500" ticks="1513935360000" start="" end="">
+                                        <div class="px-1">00:00:05:24</div>
+                                        <div class="px-1">➔</div>
+                                        <div class="px-1">00:00:06:13</div>  
+                                    </button>                            
+                                </td>
+                                <td class="ps-1">
+                                    <button class="button-take-pick m-0 rounded-md w-full px-1 hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500">✓</button>
+                                </td>                        
+                            </tr>
+                            <tr class="repetition-item-table-row" take-number="2">
+                                <td class="p-1 text-right">
+                                    1
+                                </td>
+                                <td class="px-1 font-medium col-span-3">
+                                    <button class="flex justify-between button-take-time w-full m-0 rounded-md px-1 hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500" ticks="1513935360000" start="" end="">
+                                        <div class="px-1">00:00:05:24</div>
+                                        <div class="px-1">➔</div>
+                                        <div class="px-1">00:00:06:13</div>  
+                                    </button>                            
+                                </td>
+                                <td class="ps-1">
+                                    <button class="button-take-pick m-0 rounded-md w-full px-1 bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none">✓</button>
+                                </td>                        
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div> -->
+            
+        </div>
+
+    </div>
+
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="multitrack-video">
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🎞️Multi-track</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+        
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <!-- <div class="flex justify-center mb-4">
+                <div class="flex justify-center bg-zinc-700 rounded-md">
+                    <button class="border-none active:bg-gray-600 bg-zinc-700 hover:bg-zinc-500 py-1 px-4 me-1 rounded-md text-white text-xs font-medium menu-open" target-menu="multitrack-audio" >MUTE QUIET AUDIO</button>
+                    <button class="border-none bg-gray-500 py-1 px-4 ms-1 rounded-md text-white text-xs font-medium" >SWITCH CAMERAS</button>
+                </div>
+            </div> -->
+            <div class="flex justify-center mb-4">
+                <div class="flex justify-center bg-zinc-700 rounded-md">
+                    <button class="outline-none border-none bg-gray-500 py-1 px-4 me-1 rounded-md text-white text-xs font-medium" >SWITCH CAMERAS</button>
+                    <button class="outline-none border-none active:bg-gray-600 bg-zinc-700 hover:bg-zinc-500 py-1 px-4 ms-1 rounded-md text-white text-xs font-medium menu-open" target-menu="multitrack-audio" >MUTE QUIET AUDIO</button>
+                </div>
+            </div>
+
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Edits a multi-track sequence (such as a podcast)</p>
+            </div>
+
+            <!-- <div class="mt-4 flex flex-col">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-md text-white my-0.5">Number of speakers</h4>
+                    <div class="flex">
+                        <button class="px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none" id="button-multitrack-video-speakers-minus">-</button>
+                        <input type="text" id="value-multitrack-video-number-speakers" class="w-6 text-center mx-0.5 px-0.5 bg-transparent border-transparent cursor-pointer rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 text-gray-300 focus:text-black" value="2">
+                        <button class="px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none" id="button-multitrack-video-speakers-plus">+</button>
+                    </div>                    
+                </div>
+            </div> -->
+            <div class="mt-4 flex flex-col">                
+                <h4 class="text-md text-white my-0.5 mb-1">Speakers</h4>
+                <div id="multitrack-video-audio-names" class="flex-col">
+                    <div class="flex justify-between my-1">
+                        <div class="w-10">A1:</div>
+                        <input class="grow bg-white border-transparent px-1 border-slate-300 rounded-md text-left text-black text-sm outline-none" id="textinput-multitrack-video-audio-name-1" speaker-number="1" type="text" value="">
+                        <button class="button-multitrack-video-speaker-delete ms-2 px-2 me-0 rounded-md px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button>
+                    </div>
+                    <div class="flex justify-between my-1">
+                        <div class="w-10">A2:</div>
+                        <input class="grow bg-white border-transparent px-1 border-slate-300 rounded-md text-left text-black text-sm outline-none" id="textinput-zoom-animation-duration" type="text" value="">
+                        <button class="button-silence-delete ms-2 px-2 me-0 rounded-md px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button>
+                    </div>
+                    <div class="w-full flex justify-center">
+                        <button class="mt-2 px-5 me-0 rounded-md px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-col">                
+                <h4 class="text-md text-white my-0.5 mb-1">Video</h4> 
+                <div id="multitrack-video-mapping" class="flex-col">                              
+                    <div class="flex justify-between my-0.5">
+                        <div class="w-10">Video 1:</div>
+                        <select id="silence-cutting-audio-track-basic" class=" grow bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="0">Audio 1</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between my-0.5">
+                        <div class="w-10">Video 2:</div>
+                        <select id="silence-cutting-audio-track-basic" class=" grow bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="0">Audio 1</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between my-0.5">
+                        <div class="w-10">Video 3:</div>
+                        <select id="silence-cutting-audio-track-basic" class=" grow bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="0">Audio 1</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 mb-2 flex justify-center">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-multitrack-video-analyze">Analyze</button>
+            </div>
+                     
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 menu hidden" menu-name="multitrack-video-results-list">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="multitrack-video">< Back</button>
+            <h3 class="text-center text-xl text-white">🎞️Multi-track</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Edits a multi-track sequence (such as a podcast)</p>
+            </div> 
+        </div>
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <div>
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Speaker switching frequency</h4>        
+                </div>
+                <div class="flex items-center">     
+                    <div class="grow">
+                        <input id="range-multitrack-switching-frequency" type="range" value="50" min="0" max="100" step="1" class="outline-none  w-full my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">                                                
+                    </div>               
+                    <div class="w-12 text-right">
+                        <span id="value-multitrack-switching-frequency">50</span>%
+                    </div>
+                </div>                
+            </div>
+
+<!-- 
+            <div id="">
+                <h4 class="text-md text-white mt-6">Cutaways</h4>                       
+                <div class="flex items-center">                                
+                    <input type="checkbox" id="multitrack-video-add-cutaways" name="multitrack-video-add-cutaways">
+                    <label for="multitrack-video-add-cutaways" class="ms-1 text-sm font-medium select-none" >Break up long sections with "cutaway" shots</label>
+                </div>                
+            </div> -->
+
+            <div>
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Max shot duration (sec)</h4>        
+                </div>
+                <div class="flex items-center">                    
+                    <div class="grow">
+                        <input id="range-multitrack-max-time" type="range" value="60" min="5" max="60" step="1" class="outline-none w-full my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                    </div>                    
+                    <div class="w-12 text-right">
+                        <span id="value-multitrack-max-time">60</span> sec
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between mt-4 mb-1">
+                    <h4 class="text-md text-white ">Cutaway shot duration (sec)</h4>        
+                </div>
+                <div class="flex items-center">                    
+                    <div class="grow">
+                        <input id="range-multitrack-cutaway-duration" type="range" value="4" min="1" max="10" step="1" class="outline-none w-full my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                    </div>                    
+                    <div class="w-12 text-right">
+                        <span id="value-multitrack-cutaway-duration">4</span> sec
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="mt-6 mb-2 flex justify-center">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-multivideo-video-go">Go!</button>
+            </div>
+        </div>
+        
+        <div class="my-6 py-4 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <!-- <div class="text-lg font-bold mb-4 text-white flex justify-center items-center">
+                <img src="../lib/images/tick-128.png" class="w-6 h-6 me-1.5">
+                <div><span id="num-silences">[ERROR]</span> silences found</div>
+            </div> -->
+
+            
+            <div class="bg-zinc-600 my-2 pb-4 pt-2 px-2 rounded-xl" id="multitrack-video-table">
+    
+                <table class="w-full ">
+                    <thead class="text-xs uppercase text-gray-400">
+                        <tr>
+                            <th scope="col" class="p-0 px-1 text-left">Speaker</th>
+                            <th scope="col" class="p-0 ps-1 text-left">Shot</th>
+                            <th scope="col" class="p-0 ps-1 text-center">Video</th>
+                            <th scope="col" class="p-1 px-2 text-center flex justify-between">
+                                <div class="px-1">Start</div>
+                                <div> </div>
+                                <div class="px-1">End</div>                                
+                            </th>
+                            <!-- <th scope="col" class="ps-1"></th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="silences-table-row" multitrack-video-decision-number="1">
+                            <td class="p-1 text-right">
+                                1
+                            </td>
+                            <td class="px-1 font-medium col-span-3">
+                                <button class="flex justify-between button-silence-time w-full m-0 rounded-md px-1 hover:bg-gray-400 active:bg-gray-600 hover:border-gray-400 active:border-gray-600 text-white bg-gray-500 border-gray-500" ticks="1513935360000" start="" end="">
+                                    <div class="px-1">00:00:05:24</div>
+                                    <div class="px-1">➔</div>
+                                    <div class="px-1">00:00:06:13</div>  
+                                </button>                            
+                            </td>
+                            <td class="ps-1">
+                                <button class="button-silence-delete m-0 rounded-md w-full px-1 bg-gray-500 hover:bg-gray-400 active:bg-gray-600 border-gray-500 hover:border-gray-400 active:border-gray-600 text-white">X</button>
+                            </td>                        
+                        </tr>
+                        </tbody>
+                </table>
+                    
+    
+            </div>
+
+
+            
+            
+            <div class="mt-6 mb-2 flex justify-center hidden" id="container-silence-cutting-advanced-analyze">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-silence-cutting-analyze-go">Analyze audio</button>
+            </div>
+             
+        </div>
+    </div>
+    
+    
+    <div class="container mx-auto px-4 menu hidden" menu-name="multitrack-audio">        
+        
+        <div class="my-6 px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">🎞️Multi-track</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <!-- <div class="my-2 px-2 bg-transparent rounded-xl">
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Cuts out silences from ALL tracks, based on the audio from the selected guidance track(s).</p>
+            </div> 
+        </div> -->
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            
+
+            <div class="flex justify-center mb-4">
+                <div class="flex justify-center bg-zinc-700 rounded-md">
+                    <button class="outline-none border-none active:bg-gray-600 bg-zinc-700 hover:bg-zinc-500 py-1 px-4 me-1 rounded-md text-white text-xs font-medium menu-open" target-menu="multitrack-video" >SWITCH CAMERAS</button>
+                    <button class="outline-none border-none bg-gray-500 py-1 px-4 ms-1 rounded-md text-white text-xs font-medium" >MUTE QUIET AUDIO</button>
+                </div>
+            </div>
+            
+            <div class="flex justify-center text-sm mb-3 text-left">
+                <p>Disables audio tracks when they become quiet (to reduce background noise)</p>
+            </div>
+
+            <div id="" class="">
+                <h4 class="text-md text-white mt-2 mb-1">Threshold (dB) method</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-multitrack-audio-threshold-method-auto" name="setting-multitrack-audio-threshold-method" value="1" checked>
+                        <label for="setting-multitrack-audio-threshold-method-auto" class="ms-1 text-sm font-medium select-none">Auto-detect best threshold for each track</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-multitrack-audio-threshold-method-custom" name="setting-multitrack-audio-threshold-method" value="2">
+                        <label for="setting-multitrack-audio-threshold-method-custom" class="ms-1 text-sm font-medium select-none">Custom global threshold</label>
+                    </div>                   
+                </div>
+            </div>
+            
+            <div id="container-multitrack-audio-custom-threshold" class="flex justify-between items-center mt-1 hidden">
+                <div class="flex flex-col w-3/4">
+                    <input id="range-multitrack-audio-custom-threshold" type="range" value="-30" min="-100" max="0" step="1" class="outline-none ms-4 my-2 h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 active:bg-gray-700 focus:bg-gray-700">
+                </div>                    
+                <div class="w-1/4">
+                    <div class="flex items-center">
+                        <input type="text" id="value-multitrack-audio-custom-threshold" class="w-full text-right mx-0.5 px-0.5 bg-transparent border-transparent cursor-text rounded-md hover:bg-zinc-500 outline-none active:border-transparent focus:border-transparent focus:bg-zinc-300 focus:text-black" value="-30">
+                        <div class="select-none">dBFS</div>
+                    </div>
+                </div> 
+            </div>                         
+
+            
+            <div id="setting-multitrack-tracks-audio" class="">
+                <!-- <h4 class="text-md text-white mt-6 mb-1">Silence guidance audio track(s)</h4>        
+                <div class="silence-cutting-audio-track-basic flex-col">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="track-1-audio" name="track-1-audio" value="1" checked>
+                        <label for="track-1-audio" class="ms-1 text-sm font-medium select-none" >Audio 1</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="track-2-audio" name="track-2-audio" value="2" checked>
+                        <label for="track-2-audio" class="ms-1 text-sm font-medium select-none" >Audio 2</label>
+                    </div>                   
+                </div> -->
+            </div>         
+             
+
+            <div id="setting-multitrack-audio-scope" class="">
+                <h4 class="text-md text-white mt-6">Scope</h4>        
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-multitrack-audio-scope-full" name="setting-multitrack-audio-scope" value="1" checked>
+                        <label for="setting-multitrack-audio-scope-full" class="ms-1 text-sm font-medium select-none" >Full sequence</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-multitrack-audio-scope-inout" name="setting-multitrack-audio-scope" value="2">
+                        <label for="setting-multitrack-audio-scope-inout" class="ms-1 text-sm font-medium select-none" >In/Out points</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <!-- <div id="">
+                <h4 class="text-md text-white mt-6">Speech detection (experimental)</h4>        
+                <div class="text-xs hidden" id="nospeech-disable-message-multitrack-audio">Not currently supported on Apple Silicon Macs</div>
+                <div class="flex flex-col mt-1">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="detect-nonspeech-multitrack-audio" name="detect-nonspeech-multitrack-audio">
+                        <label for="detect-nonspeech-multitrack-audio" class="ms-1 text-sm font-medium select-none" >Detect non-speech sections as silences</label>
+                    </div>
+                </div>
+            </div> -->
+
+            <div id="">
+                <h4 class="text-md text-white mt-6">Video tracks</h4>        
+                <div class="flex flex-col mt-1">
+                    <div class="flex items-center">                                
+                        <input type="checkbox" id="disable-linked-video-multitrack-audio" name="disable-linked-video-multitrack-audio">
+                        <label for="disable-linked-video-multitrack-audio" class="ms-1 text-sm font-medium select-none" >Also disable any linked video tracks</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="setting-multitrack-audio-format" class="hidden">
+                <h4 class="text-md text-white mt-6">Analysis format</h4>        
+                <!-- <div class="text-xs  mb-1">If analysis is slow, try switching formats (share feedback!)</div> -->
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-multitrack-audio-format-wav" name="setting-multitrack-audio-format" value="1">
+                        <label for="multitrack-audio-format-wav" class="ms-1 text-sm font-medium select-none" >WAV (potentially more accurate)</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="setting-multitrack-audio-format-mp3" name="setting-multitrack-audio-format" value="2" checked>
+                        <label for="setting-multitrack-audio-format-mp3" class="ms-1 text-sm font-medium select-none" >MP3 (lower memory usage)</label>
+                    </div>                   
+                </div>
+            </div>
+
+            <div id="setting-multitrack-audio-algorithm-basic" class="">
+                <h4 class="text-md text-white mt-6">Cutting algorithm</h4>        
+                <!-- <div class="text-xs mb-1">If cutting is slow, try switching algorithms (share feedback!)</div> -->
+                <div class="flex flex-col">
+                    <div class="flex items-center">                                
+                        <input type="radio" id="multitrack-audio-algorithm-basic-original" name="multitrack-audio-algorithm-basic" value="1" >
+                        <label for="multitrack-audio-algorithm-basic-original" class="ms-1 text-sm font-medium select-none" >Original (for &lt;30 min audio)</label>
+                    </div>            
+                    <div class="flex items-center">                                
+                        <input type="radio" id="multitrack-audio-algorithm-basic-rapid" name="multitrack-audio-algorithm-basic" value="2" checked>
+                        <label for="multitrack-audio-algorithm-basic-rapid" class="ms-1 text-sm font-medium select-none" >Rapid (for 30+ min audio)</label>
+                    </div>
+                    <!-- <div class="flex items-center">                                
+                        <input type="radio" id="multitrack-audio-algorithm-basic-turbo" name="multitrack-audio-algorithm-basic" value="3" checked>
+                        <label for="multitrack-audio-algorithm-basic-turbo" class="ms-1 text-sm font-medium select-none" >Turbo (50x faster, experimental)</label>
+                    </div> -->
+                    <!-- <div class="flex items-center">                                
+                        <input type="radio" id="multitrack-audio-algorithm-basic-sequential" name="multitrack-audio-algorithm-basic" value="3">
+                        <label for="multitrack-audio-algorithm-basic-sequential" class="ms-1 text-sm font-medium select-none" >Sequential (2x faster, experimental)</label>
+                    </div> -->
+                </div>
+            </div>
+
+            <div class="mt-6 mb-2 flex justify-center">
+                <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-multitrack-audio-go">Go!</button>
+            </div>
+             
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6 menu hidden" menu-name="settings">        
+        <div class="px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">⚙️ Settings</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+            <div id="setting-license-key">
+                <h4 class="text-md text-white mt-2 mb-1">License key</h4>        
+                <div class="my-2 flex">
+                    <input class="w-full rounded-lg p-2 me-2 text-gray-700 bg-gray-200 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="license-key" type="text" placeholder="License key">
+                    <div class="p-2 rounded-lg font-bold bg-neutral-300 text-black border-none disabled hidden select-none" id="license-verified"><div class="flex px-2 justify-center items-center"><img class="bg-emerald-600 h-6 w-6 me-2 p-1 rounded-md" src="../lib/images/tick_old.png" class="w-4 h-4 me-2">Verified</div></div>
+                    <button class="p-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none" id="button-verify-license">Verify</button>
+                </div>
+            </div>
+            <div class="flex justify-between">
+                <div class="flex flex-col">
+                    <div id="" class="flex justify-between">
+                        <div class="flex items-baseline">
+                            <h4 class="text-md text-zinc-300 mt-1">Plan:&nbsp;<span id="license-plan" class="text-zinc-400"></span></h4>
+                            <h4 class="text-md text-zinc-400 mt-1">
+                                <abbr class="no-underline" title="https://firecut.ai/accounts/dashboard/">
+                                    &nbsp;(<span class="cursor-pointer hover:underline hover:text-zinc-300" id="button-manage-plan">manage</span>
+                                </abbr>
+                            </h4>
+                            <img class="h-3 w-3 ms-1.5" src="../lib/images/new_tab.png">
+                            <h4>)</h4>
+                        </div>
+                        <!-- <h4 class="text-md text-zinc-400 mt-1">Plan: <span id="license-plan"></span> (manage </h4><img inline class="h-3 w-3 ms-1.5" src="../lib/images/new_tab.png"><h4>)</h4>         -->
+                        <!-- <a href="#" class="text-md text-zinc-400 mt-4 mb-1 hover:underline hover:text-zinc-300 cursor-pointer active:text-zinc-500" id="uninstall">Uninstall</a>         -->
+                    </div>            
+                    <div id="setting-version-display" class="flex justify-between">
+                        <h4 class="text-md text-zinc-300 mt-1">App version: <span id="app-version" class="text-zinc-400"></span></h4>        
+                        <!-- <a href="#" class="text-md text-zinc-400 mt-4 mb-1 hover:underline hover:text-zinc-300 cursor-pointer active:text-zinc-500" id="uninstall">Uninstall</a>         -->
+                    </div>
+                    <!-- <div id="setting-version-display" class="flex justify-between">
+                        <abbr title="https://firecut.ai/accounts/dashboard/">
+                            <div class="cursor-pointer" id="button-manage-plan">
+                                <div class="flex justify-center items-baseline">
+                                    <h4 class="text-md text-zinc-400 mt-1 underline">Manage plan</h4>   
+                                    <img class="h-3 w-3 ms-1.5" src="../lib/images/new_tab.png" class="">
+                                </div>
+                            </div>
+                        </abbr>
+                    </div> -->
+                </div>
+                <!-- <div class="mt-1">
+                    <abbr title="https://firecut.ai/accounts/dashboard/">
+                        <button class="my-2 p-2 rounded-lg text-md font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none" id="button-manage-plan">
+                            <div class="flex px-2 justify-center items-center">
+                                <div>Manage plan</div>
+                                <img class="h-4 w-4 ms-1.5 p-0.5" src="../lib/images/new_tab.png" class="w-4 h-4 me-2">
+                            </div>
+                        </button>
+                    </abbr>
+                </div> -->
+            </div> 
+               
+            
+
+            <div>
+                <h4 class="text-md text-white mt-8 mb-1">Other settings</h4>                        
+                <div class="flex items-center">                                
+                    <input setting type="checkbox" id="hideUnavailableFeatures" name="hideUnavailableFeatures" class="cursor-pointer">
+                    <label for="hideUnavailableFeatures" class="ms-1 text-sm font-medium select-none cursor-pointer" >Hide unavailable features</label>
+                </div>
+            </div>
+
+            <!-- <button class="leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none" id="button-test-34"><div class="text-2xl mb-1">📜</div><div>Share testing log</div></button>          -->
+            <!-- <div class="mt-8">
+                <h4 class="text-md text-white mt-2 mb-1">Logs</h4>        
+                <button class="my-2 p-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none" id="button-test-34">Share logs</button>
+            </div> -->
+            
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6 menu hidden" menu-name="feedback">        
+        <div class="px-0 bg-transparent rounded-xl flex justify-between">
+            <button class="outline-none px-2 rounded-lg font-bold bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-300 active:text-black border-none menu-open" target-menu="main">< Back</button>
+            <h3 class="text-center text-xl text-white">💬 Share feedback</h3>
+            <div class="px-2 rounded-lg font-bold bg-transparent border-none text-transparent cursor-default fake-element-for-spacing">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        </div>
+
+        
+
+        <div class="my-6 py-2 pb-4 px-4 bg-zinc-600 rounded-xl">
+
+            <div id="feedback-form" class="">
+                <div id="setting-feedback-type" class="">
+                    <h4 class="text-md text-white mt-1">Type</h4>        
+                    <div class="flex flex-col">
+                        <div class="flex items-center">                                
+                            <input type="radio" id="setting-feedback-type-bug" name="setting-feedback-type" value="bug_report" checked>
+                            <label for="setting-feedback-type-bug" class="ms-1 text-sm font-medium select-none" >🪲 Bug report</label>
+                        </div>            
+                        <div class="flex items-center">                                
+                            <input type="radio" id="setting-feedback-type-feature" name="setting-feedback-type" value="feature_request">
+                            <label for="setting-feedback-type-feature" class="ms-1 text-sm font-medium select-none" >🔨 Feature request</label>
+                        </div>
+                        <div class="flex items-center">                                
+                            <input type="radio" id="setting-feedback-type-other" name="setting-feedback-type" value="anything_else">
+                            <label for="setting-feedback-type-other" class="ms-1 text-sm font-medium select-none" >😄 Anything else</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-md text-white mt-6 mb-1">Feedback</h4>        
+                    <textarea id="textarea-feedback" rows=8 class=" text-sm w-full rounded-lg p-2 me-2 text-gray-700 bg-gray-200 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"></textarea>
+                </div>
+
+                <div class="mt-6 mb-2 flex justify-center">
+                    <button class="py-2 px-6 rounded-lg font-bold bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white active:text-white border-none" id="button-send-feedback">Send!</button>
+                </div>
+
+                <div feature="container-feedback-board-1" feature_state="enabled" class="mt-6 flex items-baseline justify-center hidden" id="container-feedback-board-1">
+                    <h4 class="text-sm text-zinc-400">
+                        <abbr class="no-underline" class="abbr-feedback-board" title="https://firecut.ai/feedback/">
+                            <span class="cursor-pointer hover:underline hover:text-zinc-300" class="button-feedback-board">See FireCut feedback board</span>
+                        </abbr>
+                    </h4>
+                    <img class="h-3 w-3 ms-1.5" src="../lib/images/new_tab.png">
+                </div>
+
+            </div>
+
+            <div id="feedback-sent" class="mt-6 mb-2 flex flex-col justify-center items-center hidden">
+                <div class="text-4xl select-none">🙏</div>
+                <div class="mt-5 text-xl select-none">Sent! Thank you</div>
+                
+                <div feature="container-feedback-board-2" feature_state="enabled" class="mt-6 flex items-baseline justify-center hidden" id="container-feedback-board-2">
+                    <h4 class="text-sm text-zinc-400">
+                        <abbr class="no-underline" class="abbr-feedback-board" title="https://firecut.ai/feedback/">
+                            <span class="cursor-pointer hover:underline hover:text-zinc-300" class="button-feedback-board">See FireCut feedback board</span>
+                        </abbr>
+                    </h4>
+                    <img class="h-3 w-3 ms-1.5" src="../lib/images/new_tab.png">
+                </div>
+            </div>
+            
+
+
+      
+            
+        </div>
+    </div>
+
+    
+
+    <div class="container mx-auto px-4 menu" menu-name="main">
+                
+        <div class="my-6 py-4 px-4 bg-zinc-600 rounded-xl">
+            
+            
+            <div class="grid grid-cols-2 gap-4">
+
+                <!-- ENABLED VERSIONS -->
+                <button feature="silence-cutting-basic" feature_state="enabled" class="outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="silence-cutting-basic"><div class="text-2xl mb-1">🔇</div><div>Remove silences</div></button>                
+
+                <!-- As an exception for now, we render this as a "hideable" feature that is initially hidden -->
+                <button feature="remove-filler-words" feature_state="enabled" class="hidden relative outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="remove-filler-words"><div class="text-2xl mb-1">🗣️</div><div>Remove filler words</div><div class="ms-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1 py-[1px] rounded-md absolute right-1 top-1">🧪 Beta</div></button>
+
+                <button feature="zooms" feature_state="enabled" class="outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="zooms"><div class="text-2xl mb-1">🔍</div><div>Add zooms</div></button>  
+                <button feature="chapters" feature_state="enabled" class="outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="chapters"><div class="text-2xl mb-1">🔖</div><div>Add chapters</div></button>  
+                <button feature="takes" feature_state="enabled" class="outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="takes"><div class="text-2xl mb-1">📑</div><div>Remove repetition</div></button>  
+                <button feature="multitrack-video" feature_state="enabled" class="outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="multitrack-video"><div class="text-2xl mb-1">🎞️</div><div>Multi-track</div></button>
+
+                <!-- DISABLED VERSIONS -->
+                <div feature="silence-cutting-basic" feature_state="disabled" class="relative hidden">
+                    <div class="absolute top-1 left-1 text-gray-600 text-xs"><span style="color: transparent; text-shadow: 0 0 0 #666">🔒</span></div>
+                    <button class="w-full leading-none py-4 px-2 rounded-lg font-bold bg-neutral-400 active:bg-neutral-400 hover:bg-neutral-400 active:text-gray-500 text-gray-500 border-none cursor-default"><div class="text-2xl mb-1" style="filter: grayscale(90%);">🔇</div><div>Remove silences</div></button>
+                </div>
+                <!-- <div feature="remove-filler-words" feature_state="disabled" class="relative hidden">
+                    <div class="absolute top-1 left-1 text-gray-600 text-xs"><span style="color: transparent; text-shadow: 0 0 0 #666">🔒</span></div>
+                    <button class="w-full leading-none py-4 px-2 rounded-lg font-bold bg-neutral-400 active:bg-neutral-400 hover:bg-neutral-400 active:text-gray-500 text-gray-500 border-none cursor-default"><div class="text-2xl mb-1" style="filter: grayscale(90%);">🗣️</div><div>Remove filler words</div></button>
+                </div> -->
+                <div feature="zooms" feature_state="disabled" class="relative hidden">
+                    <div class="absolute top-1 left-1 text-gray-600 text-xs"><span style="color: transparent; text-shadow: 0 0 0 #666">🔒</span></div>
+                    <button class="w-full leading-none py-4 px-2 rounded-lg font-bold bg-neutral-400 active:bg-neutral-400 hover:bg-neutral-400 active:text-gray-500 text-gray-500 border-none cursor-default"><div class="text-2xl mb-1" style="filter: grayscale(90%);">🔍</div><div>Add zooms</div></button>
+                </div>
+                <div feature="chapters" feature_state="disabled" class="relative hidden">
+                    <div class="absolute top-1 left-1 text-gray-600 text-xs"><span style="color: transparent; text-shadow: 0 0 0 #666">🔒</span></div>
+                    <button class="w-full leading-none py-4 px-2 rounded-lg font-bold bg-neutral-400 active:bg-neutral-400 hover:bg-neutral-400 active:text-gray-500 text-gray-500 border-none cursor-default"><div class="text-2xl mb-1" style="filter: grayscale(90%);">🔖</div><div>Add chapters</div></button>
+                </div>
+                <div feature="takes" feature_state="disabled" class="relative hidden">
+                    <div class="absolute top-1 left-1 text-gray-600 text-xs"><span style="color: transparent; text-shadow: 0 0 0 #666">🔒</span></div>
+                    <button class="w-full leading-none py-4 px-2 rounded-lg font-bold bg-neutral-400 active:bg-neutral-400 hover:bg-neutral-400 active:text-gray-500 text-gray-500 border-none cursor-default"><div class="text-2xl mb-1" style="filter: grayscale(90%);">📑</div><div>Remove repetition</div></button>
+                </div>
+                <div feature="multitrack-video" feature_state="disabled" class="relative hidden">
+                    <div class="absolute top-1 left-1 text-gray-600 text-xs"><span style="color: transparent; text-shadow: 0 0 0 #666">🔒</span></div>
+                    <button class="w-full leading-none py-4 px-2 rounded-lg font-bold bg-neutral-400 active:bg-neutral-400 hover:bg-neutral-400 active:text-gray-500 text-gray-500 border-none cursor-default"><div class="text-2xl mb-1" style="filter: grayscale(90%);">🎞️</div><div>Multi-track</div></button>
+                </div>
+
+
+                <!-- HIDE-ABLE FEATURES (i.e. there is no "DISABLED" version) -->
+                <!-- hidden this by default because the features change can take a second, so that this button can only "appear" but doesn't "disapper" -->
+                <button feature="share-feedback" feature_state="enabled" class="hidden outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="feedback"><div class="text-2xl mb-1">💬</div><div>Share feedback</div></button>
+                <button feature="help" feature_state="enabled" class="hidden outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none" id="button-help"><abbr class="no-underline" title="https://firecut.ai/help/"><div class="text-2xl mb-1"><span style="color: transparent; text-shadow: 0 0 0 #7e22ce">❓</span></div><div>Help</div></abbr></button>
+
+                <!-- <button class="leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="crossfades"><div class="text-2xl mb-1">🔀</div><div>Add crossfades</div></button> -->
+
+                <!-- ALWAYS PRESENT -->
+                <button class="outline-none leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none menu-open" target-menu="settings"><div class="text-2xl mb-1">⚙️</div><div>Settings</div></button>
+                
+                <!-- <button class="leading-none py-4 px-2 rounded-lg font-bold bg-neutral-300 hover:bg-neutral-100 active:bg-neutral-400 text-black active:text-black border-none" id="button-test-34"><div class="text-2xl mb-1">📜</div><div>Share testing log</div></button> -->
+                
+            </div>
+        </div>                
+
+        <div id="bg-music-search-results-container">
+
+
+        </div>
+    </div>
+
+   
+    <div class="h-screen w-screen fixed top-0 left-0 bg-black/90 z-40 hidden" id="notifications-panel">
+        <!-- RESTART BUTTON -->
+        <!-- <div class="container mx-auto px-4 pt-2 flex justify-end">        
+            <button id="" class="restartExt mx-0 px-1 rounded-sm font-medium bg-transparent hover:bg-neutral-500 active:bg-neutral-400 text-gray-500 hover:text-gray-100 active:text-black border-none text-xs">🗘 Abort / Reload plugin</button>            
+        </div> -->
+
+        <div class="p-8">
+            <!-- ERROR -->
+            <div id="error" class="my-6 py-2 ps-4 pe-2 bg-red-500 rounded-xl flex justify-between items-center hidden">
+                <div id="error-msg" class="text-white"></div>
+                <button id="error-close-button" class="place-self-start p-3 px-5 rounded-lg font-bold bg-red-600 hover:bg-red-400 active:bg-red-400 text-white border-none">X</button>
+            </div>
+
+            <!-- MESSAGE -->
+            <div id="message" class="my-6 py-2 ps-4 pe-2 bg-sky-500 rounded-xl flex justify-between items-center hidden">
+                <div id="message-msg" class="text-white"></div>
+                <button id="message-close-button" class="place-self-start p-3 px-5 rounded-lg font-bold bg-sky-600 hover:bg-sky-400 active:bg-sky-400 text-white border-none">X</button>
+            </div>
+
+            <!-- SPINNER -->
+            <div id="spinner" class="my-6 py-2 px-4 bg-transparent rounded-xl flex flex-col justify-center items-center hidden">                
+                               
+                <div class="bg-transparent flex justify-center items-center">
+                    <div>
+                        <svg aria-hidden="true" class="w-6 h-6 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                        </svg>
+                    </div>
+                    <div id="spinner-msg">
+                        Working on it...
+                    </div>
+                    
+                </div>
+                <!-- <div class="mt-2">
+                    Please do not manipulate the project in the meantime (e.g. don't press Ctrl+Z or edit any clips).
+                </div> -->
+                <div class="mt-4 flex text-sm">
+                    <button id="stop-button" onClick="abort_only()" class="mx-2 p-2 rounded-lg font-bold bg-red-500 hover:bg-red-400 active:bg-red-400 text-white border-none">STOP</button>
+                    <!-- <button id="stop-and-undo-button" onClick="abort_and_undo()" class="mx-2 p-2 rounded-lg font-bold bg-red-500 hover:bg-red-400 active:bg-red-400 text-white border-none">STOP AND UNDO CHANGES</button> -->
+                </div> 
+                
+            </div>
+        </div>
+
+    </div>
+    
+    <div id="debug" class="hidden">        
+        <label>Temp file location: </label><input id="path" type="text" value="C:\\Users\\suhai\\AppData\\Local\\Temp\\editai\\tmp.mp3" style="width:200px"><br>
+        
+        <label>Threshold: </label><input id="silence-threshold" type="text" value="0.005" style="width:250px"><br>
+        <label>Min silence length (s): </label><input id="silence-min-length" type="text" value="0.5" style="width:250px"><br>
+        <label>Seek step (s): </label><input id="silence-seek-step" type="text" value="0.05" style="width:250px"><br>
+        <label>Razor timecode: </label><input id="razor-timecode" type="text" value="10" style="width:250px"><br>
+
+
+        <label>Index of take to highlight: </label><input id="take-index" type="text" value="0" style="width:200px"><br>
+
+        <label>Index of take to highlight: </label><input id="take-index" type="text" value="0" style="width:200px"><br>
+
+        <label>Takes JSON: </label><br><textarea disabled id="takes-json" rows="10" cols="80"></textarea><br>    
+        
+        <label>OpenAI response text (separating takes): </label><br><textarea id="take-response-text" rows="5" cols="80"></textarea><br>
+        <label>Timings of selected take: </label><br><textarea id="take-timings" rows="2" cols="80"></textarea><br>
+
+        <label>Recut every N words (on average): </label><input id="words-per-recut" type="text" value="75" style="width:200px"><br>
+        <label>Highlighted words (min): </label><input id="highlighted-words-min" type="text" value="10" style="width:200px"><br>
+        <label>Highlighted words (max): </label><input id="highlighted-words-max" type="text" value="20" style="width:200px"><br>
+        <label>Zoom start (s): </label><input id="zoom-start" type="text" value="20" style="width:200px"><br>
+        <label>Zoom end (s): </label><input id="zoom-end" type="text" value="22" style="width:200px"><br>
+
+        <label>Recut words: </label><br><textarea id="recut-words" rows="4" cols="80"></textarea><br>
+        
+        <label>Target track index (not name): </label><input id="target-track" type="text" value="-1" style="width:200px"><br>
+        <label>Target time (s): </label><input id="target-time" type="text" value="50" style="width:200px"><br>
+        <label>Seconds per B-roll chunk (s): </label><input id="seconds-per-chunk" type="text" value="30" style="width:200px"><br>
+
+        <label>Transcript: </label><br><textarea id="transcript" rows="15" cols="80"></textarea><br>
+        
+    </div>
+    <!-- Timing -->
+    <script type="text/javascript" src="../lib/js/timing.js"></script>
+
+    <!-- Error flags -->
+    <script type="text/javascript" src="../lib/js/errors.js"></script>
+
+    <!-- Abort control -->
+    <script type="text/javascript" src="../lib/js/abort_control.js"></script>    
+
+    <!-- JSX -->
+    <script src="../lib/JSX.js"></script>
+
+    <!-- Libraries -->
+    <script type="text/javascript" src="../lib/CSInterface.js"></script>
+    <script src="../lib/jquery-2.0.3.min.js"></script> <!-- The most recent version of jQuery that works, for some reason -->   
+    <script src="../lib/mpg123-decoder.min.js"></script> <!-- For decoding mp3 files -->
+    <script src="../lib/meyda.min.js"></script> <!-- For analysing audio -->
+    <script src="../lib/plotly-2.20.0.min.js" charset="utf-8"></script> <!-- For plotting -->
+    
+    
+        
+    <!-- Helpers -->
+    <!-- <script type="text/javascript" src="transcript.js"></script> -->
+    <script type="text/javascript" src="../lib/js/node_imports.js"></script>
+    <script type="text/javascript" src="../lib/js/directory_locations.js"></script>
+    <script type="text/javascript" src="../lib/js/helper_functions.js"></script>
+    
+
+    <!-- Key functions -->
+    <script type="text/javascript" src="../lib/js/test_functions.js"></script>
+    <script type="text/javascript" src="../lib/js/turbo.js"></script>
+    <!-- <script type="text/javascript" src="../lib/js/pr_turbo.js"></script> -->
+    <script type="text/javascript" src="../lib/js/key_functions.js"></script>
+
+    <!-- Index JS (for UI interactions ONLY!) -->
+    <script type="text/javascript" src="../lib/js/index.js"></script>
+    
+    
+    
+</body>
+</html>
